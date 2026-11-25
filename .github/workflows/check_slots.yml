@@ -1,0 +1,90 @@
+name: Świąteczna Pracownia LEGO® Slot Monitor
+
+on:
+  workflow_dispatch:
+    inputs:
+      run_once:
+        description: "Run a single check instead of the 3-hour 5-minute loop"
+        required: false
+        default: "false"
+        type: choice
+        options:
+          - "false"
+          - "true"
+      send_test_notification:
+        description: "Send a test Telegram notification and exit"
+        required: false
+        default: "false"
+        type: choice
+        options:
+          - "false"
+          - "true"
+
+concurrency:
+  group: lego-workshop-slots-monitor
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  monitor-slots:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 176
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+          cache: "pip"
+
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Restore slot state & run logs from orphan state branch (if exists)
+        run: |
+          mkdir -p data
+          git fetch origin state:state 2>/dev/null || true
+          git checkout state -- data/slots_state.json data/monitor_runs.log 2>/dev/null || true
+
+      - name: Run 3-Hour Slot Monitor (5-Minute Check Loop)
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          APPOINTEDD_WIDGET_ID: ${{ vars.APPOINTEDD_WIDGET_ID || '6af497ce58a51703b9fb8202' }}
+          APPOINTEDD_BOOKING_URL: ${{ vars.APPOINTEDD_BOOKING_URL || 'https://swiateczna-pracownia.appointedd.com/booking-widget/6af497ce58a51703b9fb8202' }}
+          DATE_FROM: ${{ vars.DATE_FROM || '2026-12-04' }}
+          DATE_TO: ${{ vars.DATE_TO || '2026-12-06' }}
+          TIMEZONE: ${{ vars.TIMEZONE || 'Europe/Warsaw' }}
+          MIN_SPACES: ${{ vars.MIN_SPACES || '1' }}
+        run: |
+          if [ "${{ inputs.send_test_notification }}" = "true" ]; then
+            python -m monitor.main --test-notify
+          elif [ "${{ inputs.run_once }}" = "true" ]; then
+            python -m monitor.main --once --sync-git-state
+          else
+            python -m monitor.main --daemon-minutes 172 --interval-minutes 5 --sync-git-state
+          fi
+
+      - name: Persist slot state & run logs to orphan `state` branch
+        if: always()
+        run: |
+          if [ -f data/slots_state.json ]; then
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git checkout --orphan temp-state
+            git rm -rf --cached . >/dev/null 2>&1 || true
+            git add -f data/slots_state.json
+            if [ -f data/monitor_runs.log ]; then
+              git add -f data/monitor_runs.log
+            fi
+            git commit -m "Update workshop slots state and run logs" || true
+            git branch -M temp-state state
+            git push -f origin state
+          fi
