@@ -257,7 +257,7 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         "--interval-minutes",
         type=int,
         default=None,
-        help="Minutes between checks in daemon mode (default: CHECK_INTERVAL_MINUTES or 5).",
+        help="Minutes between checks in daemon mode (default: CHECK_INTERVAL_MINUTES or 1).",
     )
     parser.add_argument(
         "--sync-git-state",

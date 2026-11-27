@@ -41,7 +41,7 @@ def load_settings() -> Settings:
         date_to=date.fromisoformat(os.getenv("DATE_TO", "2026-12-06").strip()),
         timezone=os.getenv("TIMEZONE", "Europe/Warsaw").strip(),
         min_spaces=max(1, int(os.getenv("MIN_SPACES", "1"))),
-        check_interval_minutes=max(1, int(os.getenv("CHECK_INTERVAL_MINUTES", "5"))),
+        check_interval_minutes=max(1, int(os.getenv("CHECK_INTERVAL_MINUTES", "1"))),
         state_path=Path(os.getenv("STATE_PATH", "data/slots_state.json")),
         run_log_path=Path(os.getenv("RUN_LOG_PATH", "data/monitor_runs.log")),
     )

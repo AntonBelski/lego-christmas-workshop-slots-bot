@@ -13,8 +13,8 @@ Instead of fragile browser scraping, this monitor queries **Appointedd's own Gra
 4. **Smart Deduplication (`data/slots_state.json` on orphan `state` branch)**:
    - Sends an instant **Telegram alert** whenever a new slot opens, a previously booked slot reopens, or `remainingSpaces` increases on an existing slot.
    - Uses push-only Telegram Bot API (`sendMessage`), so it never conflicts with other bots sharing the same token.
-5. **3-Hour GitHub Actions Loop (Every 5 Minutes)**:
-   - [.github/workflows/check_slots.yml](.github/workflows/check_slots.yml) runs for **172 minutes** (`timeout-minutes: 176`), polling every **5 minutes**, and is designed to be triggered every 3 hours via `workflow_dispatch` from [cron-job.org](https://console.cron-job.org/jobs).
+5. **3-Hour GitHub Actions Loop (Every 1 Minute)**:
+   - [.github/workflows/check_slots.yml](.github/workflows/check_slots.yml) runs for **172 minutes** (`timeout-minutes: 176`), polling every **1 minute**, and is designed to be triggered every 3 hours via `workflow_dispatch` from [cron-job.org](https://console.cron-job.org/jobs).
 
 ## GitHub Secrets
 
@@ -42,8 +42,8 @@ pytest
 # Run a single live check
 python -m monitor.main --once
 
-# Run a 3-hour loop checking every 5 minutes
-python -m monitor.main --daemon-minutes 172 --interval-minutes 5
+# Run a 3-hour loop checking every 1 minute
+python -m monitor.main --daemon-minutes 172 --interval-minutes 1
 ```
 
 ## Triggering Every 3 Hours from cron-job.org
