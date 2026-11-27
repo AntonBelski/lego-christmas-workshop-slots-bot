@@ -30,7 +30,7 @@ permissions:
 jobs:
   monitor-slots:
     runs-on: ubuntu-24.04
-    timeout-minutes: 176
+    timeout-minutes: 185
 
     steps:
       - name: Checkout repository
@@ -69,7 +69,7 @@ jobs:
           elif [ "${{ inputs.run_once }}" = "true" ]; then
             python -m monitor.main --once --sync-git-state
           else
-            python -m monitor.main --daemon-minutes 172 --interval-minutes 1 --sync-git-state
+            python -m monitor.main --daemon-minutes 179 --interval-minutes 1 --sync-git-state
           fi
 
       - name: Persist slot state & run logs to orphan `state` branch

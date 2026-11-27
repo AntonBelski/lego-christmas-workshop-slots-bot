@@ -251,7 +251,7 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         "--daemon-minutes",
         type=int,
         default=None,
-        help="Run check loop for N minutes (e.g. 172 for a 3-hour GitHub Actions window).",
+        help="Run check loop for N minutes (e.g. 179 for a 3-hour GitHub Actions window).",
     )
     parser.add_argument(
         "--interval-minutes",
